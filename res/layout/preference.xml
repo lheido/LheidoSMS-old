@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:title="@string/pref_global" >
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="notif"
+            android:summaryOff="@string/pref_notif_off"
+            android:summaryOn="@string/pref_notif_on"
+            android:title="@string/pref_notif_title" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="vibration"
+            android:summaryOff="@string/pref_vibrate_off"
+            android:summaryOn="@string/pref_vibrate_on"
+            android:title="@string/pref_vibrate_title"
+            android:dependency="notif" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="hide_keyboard"
+            android:summaryOff="@string/pref_hide_keyboard_off"
+            android:summaryOn="@string/pref_hide_keyboard_on"
+            android:title="@string/pref_hide_keyboard_title" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="first_uppercase"
+            android:summaryOff="@string/pref_first_uppercase_off"
+            android:summaryOn="@string/pref_first_uppercase_on"
+            android:title="@string/pref_first_uppercase_title" />
+    
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_conversation" >
+    	<ListPreference
+    	    android:defaultValue="10"
+    	    android:dialogTitle="@string/pref_conversation_onload"
+    	    android:entries="@array/conversation_onload"
+    	    android:entryValues="@array/conversation_onload"
+    	    android:key="conversation_onload"
+    	    android:title="@string/pref_conversation_onload"
+    	    android:summary="@string/pref_conversation_sum" />
+
+    </PreferenceCategory>
+    
+    <PreferenceCategory android:title="@string/pref_sms" >
+    	<ListPreference
+    	    android:defaultValue="21"
+    	    android:dialogTitle="@string/pref_sms_onload"
+    	    android:entries="@array/sms_onload"
+    	    android:entryValues="@array/sms_onload"
+    	    android:key="sms_onload"
+    	    android:title="@string/pref_sms_onload"
+    	    android:summary="@string/pref_sms_sum" />
+    	<ListPreference
+    	    android:defaultValue="13"
+    	    android:dialogTitle="@string/pref_text_size_dialog"
+    	    android:entries="@array/pref_text_size"
+    	    android:entryValues="@array/pref_text_size"
+    	    android:key="text_size"
+    	    android:title="@string/pref_text_size_title"
+    	    android:summary="@string/pref_text_size_sum" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

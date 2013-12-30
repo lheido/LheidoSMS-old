@@ -1,0 +1,33 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+	<item 
+	    android:id="@+id/action_call"
+	    android:orderInCategory="50"
+	    android:showAsAction="ifRoom"
+	    android:icon="@drawable/ic_action_call"
+	    android:title="@string/action_call_title"
+	    />
+    <item 
+        android:id="@+id/sub"
+        android:orderInCategory="150"
+        android:showAsAction="ifRoom"
+        android:icon="@drawable/abs__ic_menu_moreoverflow_normal_holo_dark"
+        android:title="@string/action_settings">
+    	<menu>
+    	    <item
+    	        android:id="@+id/action_new_sms"
+    	        android:icon="@drawable/ic_action_new"
+    	        android:orderInCategory="50"
+    	        android:showAsAction="ifRoom"
+    	        android:title="@string/action_new_sms"/>
+
+    	    <item
+    	        android:id="@+id/action_settings"
+    	        android:icon="@drawable/ic_action_settings"
+    	        android:orderInCategory="100"
+    	        android:showAsAction="ifRoom"
+    	        android:title="@string/action_settings"/>
+
+    	</menu>
+    </item>
+
+</menu>
