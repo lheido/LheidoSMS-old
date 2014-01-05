@@ -52,8 +52,8 @@ public class SMSFrag extends LheidoSMSFragBase {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     	View rootView = inflater.inflate(R.layout.conversation, container, false);
-    	__init__(rootView, R.id.list_conversation);
-    	gen_conversation(Message_list, Uri.parse("content://sms/"));
+    	super.__init__(rootView, R.id.list_conversation);
+    	super.gen_conversation(Message_list, Uri.parse("content://sms/"));
         conversationAdapter = new ConversationAdapter(context, R.layout.message, Message_list);
         liste.setAdapter(conversationAdapter);
         liste.setOnItemLongClickListener(new ConversationLongClick());

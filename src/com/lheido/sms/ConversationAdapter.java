@@ -2,6 +2,8 @@ package com.lheido.sms;
 
 import java.util.ArrayList;
 
+import com.lheido.sms.LheidoUtils.UserPref;
+
 //import com.actionbarsherlock.app.ActionBar.LayoutParams;
 
 import android.content.Context;
@@ -20,7 +22,7 @@ public class ConversationAdapter extends BaseAdapter {
 	 * @param position - Position de l'item à récupérer
 	 * @return l'item récupéré
 	 */
-	public MainActivity.UserPref userPref;
+	public UserPref userPref;
 	//private LayoutInflater mInflater;
 	private ArrayList<Message> mListSms;
 	private Context mContext;
@@ -28,7 +30,8 @@ public class ConversationAdapter extends BaseAdapter {
 	public ConversationAdapter(Context context, int ressource, ArrayList<Message> conversation){
 		mContext = context;
 		mListSms = conversation;
-		userPref = MainActivity.setUserPref(PreferenceManager.getDefaultSharedPreferences(mContext));
+		userPref = new UserPref();
+		userPref.setUserPref(PreferenceManager.getDefaultSharedPreferences(mContext));
 		//mInflater = LayoutInflater.from(mContext);
 	}
 	
@@ -67,9 +70,7 @@ public class ConversationAdapter extends BaseAdapter {
 		holder.mdate.setText(message.getDate());
 	 
 		//RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) holder.mLayout.getLayoutParams();
-		//Check whether message is mine to show green background and align to right
-		if(message.isRight())
-		{
+		if(message.isRight()) {
 			
 			holder.mLayout.setGravity(Gravity.RIGHT);
 			holder.mLayout.setPadding(42, 0, 0, 0);
@@ -80,9 +81,7 @@ public class ConversationAdapter extends BaseAdapter {
 				holder.mIsRead.setBackgroundColor(0x00000000);
 			}
 		}
-		//If not mine then it is from sender to show orange background and align to left
-		else
-		{
+		else {
 			holder.mLayout.setGravity(Gravity.LEFT);
 			holder.mLayout.setPadding(0, 0, 42, 0);
 			holder.mBody.setBackgroundColor(0xFF1A1A1A);
@@ -92,7 +91,6 @@ public class ConversationAdapter extends BaseAdapter {
 	}
 	@Override
 	public int getCount() {
-		// TODO Auto-generated method stub
 		return mListSms.size();
 	}
 	class ConversationViewHolder {
@@ -100,7 +98,6 @@ public class ConversationAdapter extends BaseAdapter {
 		public TextView mBody;
 		public TextView mdate;
 		public View mIsRead;
-		//public ImageView mContactPicture;
 	}
 }
 

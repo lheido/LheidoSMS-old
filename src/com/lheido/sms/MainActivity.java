@@ -10,7 +10,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 //import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
@@ -55,6 +54,7 @@ import com.lheido.sms.LheidoContact;
 import com.lheido.sms.Message;
 //import com.lheido.sms.ConversationAdapter;
 import com.lheido.sms.ListeConversationsAdapter;
+import com.lheido.sms.LheidoUtils.UserPref;
 
 public class MainActivity extends SherlockFragmentActivity {
 	protected final String ARG_SMS_DELIVERED = "new_sms_delivered";
@@ -78,45 +78,10 @@ public class MainActivity extends SherlockFragmentActivity {
     private CharSequence mDrawerTitle;
     private CharSequence mTitle;
     public static String mem_body = null;
-    public static UserPref userPref;
+    public UserPref userPref;
     public ArrayList<SherlockFragment> pages;
     //private static ArrayList<String> mConversationListe = new ArrayList<String>();
     private static ArrayList<LheidoContact> lheidoConversationListe = new ArrayList<LheidoContact>();
-    
-    public static class UserPref{
-    	public int max_conversation = 10;
-    	public int max_sms = 21;
-    	public boolean hide_keyboard = true;
-    	public boolean first_upper = true;
-    	public boolean vibrate = true;
-    	public float text_size = 13.0F;
-    }
-    
-    public static UserPref setUserPref(SharedPreferences pref){
-    	UserPref new_pref = new UserPref();
-    	String pref_nb_conv = pref.getString("conversation_onload", "10");
-    	String pref_nb_sms = pref.getString("sms_onload", "21");
-    	String pref_text_size = pref.getString("text_size", "13");
-    	try{
-    		new_pref.max_conversation = Integer.parseInt(pref_nb_conv);
-    	}catch(Exception ex){
-    		new_pref.max_conversation = 10000;
-    	}
-    	try{
-    		new_pref.max_sms = Integer.parseInt(pref_nb_sms);
-    	}catch(Exception ex){
-    		new_pref.max_sms = 100000;
-    	}
-    	try{
-    		new_pref.text_size = Float.parseFloat(pref_text_size);
-    	}catch(Exception ex){
-    		new_pref.text_size = 13.0F;
-    	}
-    	new_pref.hide_keyboard = pref.getBoolean("hide_keyboard", true);
-    	new_pref.first_upper = pref.getBoolean("first_uppercase", true);
-    	new_pref.vibrate = pref.getBoolean("vibration", true);
-    	return new_pref;
-    }
     
     public void genListContact(){
     	final String[] projection = new String[] {"_id", "date", "message_count", "recipient_ids", "read", "type"};
@@ -162,7 +127,8 @@ public class MainActivity extends SherlockFragmentActivity {
         mDrawerList = (ListView) findViewById(R.id.left_drawer_list);
         mNewConversationLayout = (RelativeLayout) findViewById(R.id.right_drawer);
         
-        userPref = setUserPref(PreferenceManager.getDefaultSharedPreferences(this));
+        userPref = new UserPref();
+        userPref.setUserPref(PreferenceManager.getDefaultSharedPreferences(this));
         
         // set a custom shadow that overlays the main content when the drawer opens
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
@@ -296,9 +262,9 @@ public class MainActivity extends SherlockFragmentActivity {
     	mViewPager = (ViewPager) findViewById(R.id.content_frame);
     	mViewPager.setAdapter(mViewPagerAdapter);
     	
-    	if (savedInstanceState == null) {
+    	/*if (savedInstanceState == null) {
             selectItem(position_mem); // 0 par default
-        }
+        }*/
         
     }
     
@@ -340,16 +306,19 @@ public class MainActivity extends SherlockFragmentActivity {
     */
     @Override
     protected void onResume(){
-    	
+    	super.onResume();
     	try{
-    		userPref = setUserPref(PreferenceManager.getDefaultSharedPreferences(this));
+    		userPref.setUserPref(PreferenceManager.getDefaultSharedPreferences(this));
     	}catch(Exception ex){}
     	//updateContactList();
-    	selectItem(position_mem);
+    	try{
+    		selectItem(position_mem);
+    	}catch(Exception ex){
+    		selectItem(0);
+    	}
     	if(userPref.first_upper)
     		new_sms_body.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
     	new_sms_body.setSingleLine(false);
-    	super.onResume();
     }
     
     @Override
@@ -689,20 +658,18 @@ public class MainActivity extends SherlockFragmentActivity {
 
     private void selectItem(int position) {
     	SherlockFragment SMSFragConversation = new SMSFrag();
-    	SherlockFragment MMSFragConversation = new MMSFrag();
+    	//SherlockFragment MMSFragConversation = new MMSFrag();
         Bundle args = new Bundle();
         args.putInt(SMSFrag.ARG_CONVERSATION_NUMBER, position);
         args.putString(SMSFrag.ARG_CONTACT_NAME, lheidoConversationListe.get(position).getName());
         args.putString(SMSFrag.ARG_CONTACT_PHONE, lheidoConversationListe.get(position).getPhone());
         args.putInt(SMSFrag.ARG_CONVERSATION_ID, Integer.parseInt(lheidoConversationListe.get(position).getConversationId()));
         SMSFragConversation.setArguments(args);
-        MMSFragConversation.setArguments(args);
+        //MMSFragConversation.setArguments(args);
         pages.clear();
         pages.add(SMSFragConversation);
-        pages.add(MMSFragConversation);
-        try{
-        	mViewPagerAdapter.notifyDataSetChanged();
-        }catch(Exception ex){}
+        //pages.add(MMSFragConversation);
+        mViewPagerAdapter.notifyDataSetChanged();
         
         // update selected item and title, then close the drawer
         mDrawerList.setItemChecked(position, true);

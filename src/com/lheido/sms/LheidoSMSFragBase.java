@@ -18,13 +18,15 @@ import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockFragment;
 
+import com.lheido.sms.LheidoUtils.UserPref;
+
 public class LheidoSMSFragBase extends SherlockFragment {
 	public static final String ARG_CONVERSATION_ID = "conversation_id";
 	public static final String ARG_CONTACT_PHONE = "contact_phone";
 	public static final String ARG_CONVERSATION_NUMBER = "conversation_number";
     public static final String ARG_CONTACT_NAME = "contact_name";
 	public Context context;
-	public MainActivity.UserPref userPref;
+	public UserPref userPref;
 	public String name;
 	public String phoneContact;
 	public int conversationId;
@@ -77,24 +79,31 @@ public class LheidoSMSFragBase extends SherlockFragment {
 	
 	public void gen_conversation(ArrayList<Message> liste, Uri uri){
 		liste.clear();
-        Cursor query = context.getContentResolver().query(uri, new String[]{"*"}, "thread_id = "+conversationId, null, "date DESC");
-        if(query != null){
-        	int count = 0;
-        	while(count < userPref.max_sms && query.moveToNext()){
-        		String string = "";
-        		long _id = query.getLong(query.getColumnIndexOrThrow("_id"));
-        		string = query.getString(query.getColumnIndexOrThrow("body")).toString();
-        		String type = query.getString(query.getColumnIndexOrThrow("type")).toString();
-        		int read = query.getInt(query.getColumnIndexOrThrow("read"));
-        		long date = query.getLong(query.getColumnIndexOrThrow("date"));
-        		Time t = new Time();
-        		t.set(date);
-        		Log.v("LHEIDO SMS LOG", "_id = "+_id+",\n body = "+string+",\n read = "+read);
-        		add_sms(_id, string, type, read, t, 1, liste);
-        		count += 1;
-        	}
-        	query.close();
-        }
+		try{
+			Cursor query = context.getContentResolver().query(uri, new String[]{"*"}, "thread_id = "+conversationId, null, "date DESC");
+			if(query != null){
+				int count = 0;
+				while(count < userPref.max_sms && query.moveToNext()){
+					String string = "";
+					long _id = query.getLong(query.getColumnIndexOrThrow("_id"));
+					string = query.getString(query.getColumnIndexOrThrow("body")).toString();
+					String type = query.getString(query.getColumnIndexOrThrow("type")).toString();
+					int read = query.getInt(query.getColumnIndexOrThrow("read"));
+					long date = query.getLong(query.getColumnIndexOrThrow("date"));
+					Time t = new Time();
+					t.set(date);
+					Log.v("LHEIDO SMS LOG", "_id = "+_id+",\n body = "+string+",\n read = "+read);
+					add_sms(_id, string, type, read, t, 1, liste);
+					count += 1;
+				}
+				query.close();
+			}
+		}catch(Exception ex){}
+		if(liste.isEmpty()){
+			Time now = new Time();
+			now.setToNow();
+			add_sms(-1L, "Pas de sms", "1", 0, now, 0, liste);
+		}
 	}
 	
 	public void gen_MMSconversation(ArrayList<Message> liste, Uri uri){
@@ -117,12 +126,12 @@ public class LheidoSMSFragBase extends SherlockFragment {
 				}
 				query.close();
 			}
-			if(liste.isEmpty()){
-				Time now = new Time();
-				now.setToNow();
-				add_sms(-1L, "Pas de mms", "1", 0, now, 0, liste);
-			}
 		}catch(Exception ex){}
+		if(liste.isEmpty()){
+			Time now = new Time();
+			now.setToNow();
+			add_sms(-1L, "Pas de mms", "1", 0, now, 0, liste);
+		}
 	}
 	
 	public void getMMSData(long mmsId, int read, Time t, ArrayList<Message> liste){
@@ -165,7 +174,8 @@ public class LheidoSMSFragBase extends SherlockFragment {
 	
 	public void __init__(View rootView, int id_liste){
 		context = getActivity();
-    	userPref = MainActivity.setUserPref(PreferenceManager.getDefaultSharedPreferences(context));
+		userPref = new UserPref();
+    	userPref.setUserPref(PreferenceManager.getDefaultSharedPreferences(context));
         name = getArguments().getString(ARG_CONTACT_NAME);
         phoneContact = getArguments().getString(ARG_CONTACT_PHONE);
         conversationId = getArguments().getInt(ARG_CONVERSATION_ID);
