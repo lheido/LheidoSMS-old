@@ -4,7 +4,7 @@ LheidoSMS (BETA)
 Appli sms libre avec une interface moderne et sobre.
 **Encore en plein développement!!**
 ---------
-ToDo List:
+## ToDo List:
 	* MMS (en cours et bug)
 	* Nouvelle conversation (en cour)
 	* Image Contact dans la liste des conversations
