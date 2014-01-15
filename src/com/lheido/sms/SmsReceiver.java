@@ -91,7 +91,14 @@ public class SmsReceiver extends BroadcastReceiver {
 				        	Toast.makeText(context, ex.toString(), Toast.LENGTH_LONG).show();
 				        }
 					}
-					//v.vibrate(1000);
+					boolean vibrate_delivered = userPref.getBoolean("delivered_vibration", true);
+					if(vibrate_delivered){
+						long[] pattern = {
+								0,  // Start immediately
+								100,100,100,100,100,100,100
+						};
+						v.vibrate(pattern, -1);
+					}
 					break;
 				default:
 					Toast.makeText(context, "Erreur, message non remis", Toast.LENGTH_SHORT).show();

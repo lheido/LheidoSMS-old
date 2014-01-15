@@ -43,6 +43,7 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+
 import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
@@ -51,6 +52,7 @@ import com.actionbarsherlock.view.MenuItem;
 
 //class perso
 import com.lheido.sms.LheidoContact;
+import com.lheido.sms.LheidoUtils.LheidoDialog;
 import com.lheido.sms.Message;
 //import com.lheido.sms.ConversationAdapter;
 import com.lheido.sms.ListeConversationsAdapter;
@@ -67,7 +69,7 @@ public class MainActivity extends SherlockFragmentActivity {
     private ListView mDrawerList;
     private ViewPagerAdapter mViewPagerAdapter;
     private ViewPager mViewPager;
-    protected static ListeConversationsAdapter lConversationsAdapter;
+    public ListeConversationsAdapter lConversationsAdapter;
     private ActionBarDrawerToggle mDrawerToggle;
     public static Context context;
     public static ComponentName component;
@@ -80,8 +82,48 @@ public class MainActivity extends SherlockFragmentActivity {
     public static String mem_body = null;
     public UserPref userPref;
     public ArrayList<SherlockFragment> pages;
-    //private static ArrayList<String> mConversationListe = new ArrayList<String>();
-    private static ArrayList<LheidoContact> lheidoConversationListe = new ArrayList<LheidoContact>();
+    public ArrayList<LheidoContact> lheidoConversationListe = new ArrayList<LheidoContact>();
+
+    public LheidoContact getLConversationInfo(Cursor query){
+    	LheidoContact contact = new LheidoContact();
+    	contact.setConversationId(query.getString(query.getColumnIndex("_id")).toString());
+    	// bidouille en rapport avec le vidage de conversation.
+    	long nb_sms = Long.parseLong(query.getString(query.getColumnIndex("message_count")));
+    	try{
+    		Uri uri_h = Uri.parse("content://sms");
+    		String[] projection = {"*"};
+    		String selection = "thread_id = ? AND body = ?";
+    		String[] selectionArgs = {contact.getConversationId(), "LHEIDO_SMS_CONVERSATION_CLEAR"};
+    		Cursor hack = context.getContentResolver().query(uri_h, projection, selection, selectionArgs, null);
+    		long hack_nb_sms = 0;
+    		if(hack != null){
+    			while(hack.moveToNext()) hack_nb_sms ++;
+    			hack.close();
+    		}
+    		nb_sms -= hack_nb_sms;
+    		contact.setNb_sms(""+nb_sms);
+    	}catch(Exception ex){
+    		contact.setNb_sms(""+nb_sms);
+    	}
+        String recipientId = query.getString(query.getColumnIndex("recipient_ids")).toString();
+        String[] recipientIds = recipientId.split(" ");
+        for(int k=0; k < recipientIds.length; k++){
+        	Uri ur = Uri.parse("content://mms-sms/canonical-addresses" );
+        	if(recipientIds[k] != ""){
+        		Cursor cr = context.getContentResolver().query(ur, new String[]{"*"}, "_id = " + recipientIds[k], null, null);
+        		if(cr != null){
+        			while(cr.moveToNext()){
+        				//String id = cr.getString(0).toString();
+        				String address = cr.getString(1).toString();
+        				contact.setPhone(address);
+        				contact.setName(context, address);
+        			}
+        			cr.close();
+        		}
+        	}
+        }
+    	return contact;
+    }
     
     public void genListContact(){
     	final String[] projection = new String[] {"_id", "date", "message_count", "recipient_ids", "read", "type"};
@@ -90,7 +132,6 @@ public class MainActivity extends SherlockFragmentActivity {
     	if (query.moveToFirst()) {
     		int i = 0;
     		do {
-    			//mConversationListe.add(getConversationInfo(query));
     			lheidoConversationListe.add(getLConversationInfo(query));
     			i = i + 1;
     		} while (i < userPref.max_conversation && query.moveToNext());
@@ -102,6 +143,10 @@ public class MainActivity extends SherlockFragmentActivity {
     	}
     }
     
+    public void updateContact(int position, String count){
+    	lheidoConversationListe.get(position).setNb_sms(count);
+    	lConversationsAdapter.notifyDataSetChanged();
+    }
     
     public void updateContactList(){
     	lheidoConversationListe.clear();
@@ -151,6 +196,7 @@ public class MainActivity extends SherlockFragmentActivity {
         lConversationsAdapter = new ListeConversationsAdapter(this, R.layout.conversations_list, lheidoConversationListe);
         mDrawerList.setAdapter(lConversationsAdapter);
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        mDrawerList.setOnItemLongClickListener(new DrawerItemLongClickListener());
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -307,10 +353,8 @@ public class MainActivity extends SherlockFragmentActivity {
     @Override
     protected void onResume(){
     	super.onResume();
-    	try{
-    		userPref.setUserPref(PreferenceManager.getDefaultSharedPreferences(this));
-    	}catch(Exception ex){}
-    	//updateContactList();
+    	userPref.setUserPref(PreferenceManager.getDefaultSharedPreferences(this));
+    	updateContactList();
     	try{
     		selectItem(position_mem);
     	}catch(Exception ex){
@@ -324,30 +368,6 @@ public class MainActivity extends SherlockFragmentActivity {
     @Override
     protected void onPause(){
     	super.onPause();
-    }
-    
-    public LheidoContact getLConversationInfo(Cursor query){
-    	LheidoContact contact = new LheidoContact();
-    	contact.setConversationId(query.getString(query.getColumnIndex("_id")).toString());
-    	contact.setNb_sms(query.getString(query.getColumnIndex("message_count")).toString());
-        String recipientId = query.getString(query.getColumnIndex("recipient_ids")).toString();
-        String[] recipientIds = recipientId.split(" ");
-        for(int k=0; k < recipientIds.length; k++){
-        	Uri ur = Uri.parse("content://mms-sms/canonical-addresses" );
-        	if(recipientIds[k] != ""){
-        		Cursor cr = context.getContentResolver().query(ur, new String[]{"*"}, "_id = " + recipientIds[k], null, null);
-        		if(cr != null){
-        			while(cr.moveToNext()){
-        				//String id = cr.getString(0).toString();
-        				String address = cr.getString(1).toString();
-        				contact.setPhone(address);
-        				contact.setName(context, address);
-        			}
-        			cr.close();
-        		}
-        	}
-        }
-    	return contact;
     }
     
     @Override
@@ -655,15 +675,30 @@ public class MainActivity extends SherlockFragmentActivity {
             selectItem(position);
         }
     }
+    private class DrawerItemLongClickListener implements ListView.OnItemLongClickListener {
+		private static final int CONVERSATION_DIALOG = 1;
 
-    private void selectItem(int position) {
-    	SherlockFragment SMSFragConversation = new SMSFrag();
+		@Override
+		public boolean onItemLongClick(AdapterView<?> arg0, View view, int position, long id) {
+			long thread_id = Long.parseLong(lheidoConversationListe.get(position).getConversationId());
+			long sms_count = Long.parseLong(lheidoConversationListe.get(position).getNb_sms());
+			LheidoDialog dialog = new LheidoDialog(MainActivity.this, CONVERSATION_DIALOG, position, thread_id, sms_count);
+			dialog.show();
+			return false;
+		}
+    	
+    }
+    
+    public void selectItem(int position) {
+    	SMSFrag SMSFragConversation = new SMSFrag();
+    	SMSFragConversation.setAct(MainActivity.this);
     	//SherlockFragment MMSFragConversation = new MMSFrag();
         Bundle args = new Bundle();
         args.putInt(SMSFrag.ARG_CONVERSATION_NUMBER, position);
         args.putString(SMSFrag.ARG_CONTACT_NAME, lheidoConversationListe.get(position).getName());
         args.putString(SMSFrag.ARG_CONTACT_PHONE, lheidoConversationListe.get(position).getPhone());
         args.putInt(SMSFrag.ARG_CONVERSATION_ID, Integer.parseInt(lheidoConversationListe.get(position).getConversationId()));
+        args.putInt(SMSFrag.ARG_CONVERSATION_COUNT, Integer.parseInt(lheidoConversationListe.get(position).getNb_sms()));
         SMSFragConversation.setArguments(args);
         //MMSFragConversation.setArguments(args);
         pages.clear();
@@ -703,7 +738,7 @@ public class MainActivity extends SherlockFragmentActivity {
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
     
-    public static long store_sms(Message sms, int thread_id){
+    public static long store_sms(Message sms, long thread_id){
 	    try {
 	        ContentValues values = new ContentValues();
 	        values.put("address", sms.getPhone());

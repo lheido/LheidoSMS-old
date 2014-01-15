@@ -48,8 +48,8 @@ public class MMSFrag extends LheidoSMSFragBase {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     	View rootView = inflater.inflate(R.layout.conversation_mms, container, false);
-    	super.__init__(rootView, R.id.list_conversation_mms);
-    	super.gen_MMSconversation(Message_list, Uri.parse("content://mms/"));
+    	__init__(rootView, R.id.list_conversation_mms);
+    	gen_MMSconversation(Message_list, Uri.parse("content://mms/"));
         conversationAdapter = new ConversationMMSAdapter(context, R.layout.message_mms, Message_list);
         liste.setAdapter(conversationAdapter);
         liste.setOnItemLongClickListener(new ConversationLongClick());

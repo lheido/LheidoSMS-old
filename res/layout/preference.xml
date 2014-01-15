@@ -16,6 +16,12 @@
             android:dependency="notif" />
         <CheckBoxPreference
             android:defaultValue="true"
+            android:key="delivered_vibration"
+            android:summaryOff="@string/pref_deli_vibrate_off"
+            android:summaryOn="@string/pref_deli_vibrate_on"
+            android:title="@string/pref_deli_vibrate_title" />
+        <CheckBoxPreference
+            android:defaultValue="true"
             android:key="hide_keyboard"
             android:summaryOff="@string/pref_hide_keyboard_off"
             android:summaryOn="@string/pref_hide_keyboard_on"
@@ -58,6 +64,19 @@
     	    android:key="text_size"
     	    android:title="@string/pref_text_size_title"
     	    android:summary="@string/pref_text_size_sum" />
+    	<CheckBoxPreference
+            android:defaultValue="true"
+            android:key="hold_message"
+            android:summaryOff="@string/pref_hold_message_off"
+            android:summaryOn="@string/pref_hold_message_on"
+            android:title="@string/pref_hold_message_title" />
+    	<EditTextPreference
+    	    android:key="hold_message_num"
+    	    android:defaultValue="500"
+    	    android:inputType="number"
+    	    android:dependency="hold_message"
+    	    android:summary="@string/pref_hold_message_num_sum"
+    	    android:title="@string/pref_hold_message_num_title" />
     </PreferenceCategory>
 
 </PreferenceScreen>

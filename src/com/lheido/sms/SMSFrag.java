@@ -45,21 +45,23 @@ public class SMSFrag extends LheidoSMSFragBase {
     public ConversationAdapter conversationAdapter;
     public EditText sms_body;
     public String mem_body;
+    public MainActivity act;
     public SMSFrag() {
         // Empty constructor required for fragment subclasses
     }
+    
+    public void setAct(MainActivity a){
+		this.act = a;
+	}
     
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     	View rootView = inflater.inflate(R.layout.conversation, container, false);
     	super.__init__(rootView, R.id.list_conversation);
-    	super.gen_conversation(Message_list, Uri.parse("content://sms/"));
+    	super.gen_conversation(Message_list);
         conversationAdapter = new ConversationAdapter(context, R.layout.message, Message_list);
         liste.setAdapter(conversationAdapter);
         liste.setOnItemLongClickListener(new ConversationLongClick());
-        //int imageId = getResources().getIdentifier(name.toLowerCase(Locale.getDefault()),
-        //                "drawable", getActivity().getPackageName());
-        //((TextView) rootView.findViewById(R.id.contactname)).setText(columns);
         getActivity().setTitle(name);
         
         final ImageButton send_button = (ImageButton) rootView.findViewById(R.id.send_button);
@@ -86,10 +88,9 @@ public class SMSFrag extends LheidoSMSFragBase {
 					new_sms.setDate(now);
 					long new_id = MainActivity.store_sms(new_sms, conversationId);
 					add_sms(new_id, body, "2", 0, now, 0, Message_list);
-					//Toast.makeText(context, "new_id = "+new_id , Toast.LENGTH_SHORT).show();
 					conversationAdapter.notifyDataSetChanged();
-					//lheidoConversationListe.get(list_conversationId).setNb_sms(""+(Integer.parseInt(lheidoConversationListe.get(list_conversationId).getNb_sms())+1));
-					//lConversationsAdapter.notifyDataSetChanged();
+					conversation_nb_sms += 1;
+					act.updateContact(list_conversationId, ""+conversation_nb_sms);
 					sms_body.setText(R.string.empty_sms);
 					SmsManager manager = SmsManager.getDefault();
 					ArrayList<String> bodyPart = manager.divideMessage(body);
@@ -111,6 +112,10 @@ public class SMSFrag extends LheidoSMSFragBase {
 		                PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, ideli, PendingIntent.FLAG_UPDATE_CURRENT);
 						manager.sendTextMessage(phoneContact, null, body, piSent, piDelivered);
 					}
+					//supp. les messages de bidouille
+					String selection = "thread_id = ? AND body = ?";
+					String[] selectArgs = {""+conversationId, "LHEIDO_SMS_CONVERSATION_CLEAR"};
+					context.getContentResolver().delete(Uri.parse("content://sms"), selection, selectArgs);
 				} else{
 					Toast.makeText(context, R.string.empty_message, Toast.LENGTH_LONG).show();
 				}
@@ -145,8 +150,8 @@ public class SMSFrag extends LheidoSMSFragBase {
 								//on est dans la bonne conversation !
 								add_sms(-1L, body, "", 0, t, 0, Message_list);
 								conversationAdapter.notifyDataSetChanged();
-								//lheidoConversationListe.get(i).setNb_sms(""+(Integer.parseInt(lheidoConversationListe.get(i).getNb_sms())+1));
-								//lConversationsAdapter.notifyDataSetChanged();
+								conversation_nb_sms += 1;
+								act.updateContact(list_conversationId, ""+conversation_nb_sms);
 								Toast.makeText(context, "Nouveau message de " + new_name, Toast.LENGTH_LONG).show();
 							} else{
 								Toast.makeText(context, "Nouveau message de " + new_name, Toast.LENGTH_LONG).show();
@@ -158,10 +163,8 @@ public class SMSFrag extends LheidoSMSFragBase {
 				else if(iAction.equals(ACTION_DELIVERED_SMS)){
 					switch(getResultCode()){
 						case Activity.RESULT_OK:
-							Toast.makeText(context, "Message remis" , Toast.LENGTH_SHORT).show();
 							long _id = intent.getExtras().getLong(ARG_SMS_DELIVERED, -1);
 							if(_id != -1){
-								//Toast.makeText(context, "_id = "+_id , Toast.LENGTH_SHORT).show();
 								ContentValues values = new ContentValues();
 						        values.put("read", true);
 						        try{
@@ -178,12 +181,20 @@ public class SMSFrag extends LheidoSMSFragBase {
 						        		k++;
 						        	}
 						        	if(!find)
-						        		Toast.makeText(context, "Pas trouver :(, c'est pas normal ><" , Toast.LENGTH_SHORT).show();
+						        		Toast.makeText(context, "Pas trouver l'id :(, c'est pas normal ><" , Toast.LENGTH_SHORT).show();
 						        }catch (Exception ex){
 						        	Toast.makeText(context, ex.toString(), Toast.LENGTH_LONG).show();
 						        }
 							}
-							//v.vibrate(1000);
+							boolean vibrate_delivered = userPref.getBoolean("delivered_vibration", true);
+							if(vibrate_delivered){
+								long[] pattern = {
+										0,  // Start immediately
+										100,100,100,100,100,100,100
+								};
+								v.vibrate(pattern, -1);
+							}
+							Toast.makeText(context, "Message remis" , Toast.LENGTH_SHORT).show();
 							break;
 						default:
 							Toast.makeText(context, "Erreur, message non remis", Toast.LENGTH_SHORT).show();
@@ -240,6 +251,8 @@ public class SMSFrag extends LheidoSMSFragBase {
 			/*Time now = new Time();
 			now.setToNow();
 			Toast.makeText(context, now.format("%d/%m/%Y %H:%M"), Toast.LENGTH_LONG).show();*/
+			Message sms = Message_list.get(Message_list.size() -1 -position);
+			Toast.makeText(context, ""+sms.getId(), Toast.LENGTH_LONG).show();
 			return true;
 		}
     } 

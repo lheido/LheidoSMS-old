@@ -19,6 +19,7 @@
 	    android:maxHeight="300dp"
 	    android:layout_below="@+id/message_mms"
 	    android:contentDescription="@string/content_mms"
+	    android:adjustViewBounds="true"
 	    />
     <TextView
         android:layout_below="@id/spacing_top_mms"

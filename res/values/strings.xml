@@ -21,8 +21,11 @@
     <string name="pref_notif_on">Notifications activées</string>
     <string name="pref_notif_off">Notifications désactivées</string>
     <string name="pref_vibrate_title">Vibration</string>
-    <string name="pref_vibrate_on">Mode vibration activé</string>
-    <string name="pref_vibrate_off">Mode vibration désactivé</string>
+    <string name="pref_vibrate_on">Vibration activée</string>
+    <string name="pref_vibrate_off">Vibration désactivée</string>
+    <string name="pref_deli_vibrate_title">Vibration réception</string>
+    <string name="pref_deli_vibrate_on">Vibration activée</string>
+    <string name="pref_deli_vibrate_off">Vibration désactivée</string>
     <string name="pref_hide_keyboard_title">Clavier</string>
     <string name="pref_hide_keyboard_on">Le clavier se cache après l\'envoi d\'un message</string>
     <string name="pref_hide_keyboard_off">Le clavier ne se cache pas après l\'envoi d\'un message</string>
@@ -59,5 +62,15 @@
     </string-array>
     <color name="bg_conversationList" >#FF2A2A2A</color>
     <color name="bg_conversationList_focus" >#FF6A6A6A</color>
+    
+    <string name="conversation_dialog_1">Supp. la conversation</string>
+    <string name="conversation_dialog_2">Vider la conversation</string>
+    <string name="conversation_dialog_3">Supp. anciens messages</string>
+    <string name="conversation_dialog_4">Ouvrir la conversation</string>
+    <string name="pref_hold_message_off">Désactivée</string>
+    <string name="pref_hold_message_on">Activée</string>
+    <string name="pref_hold_message_title">Supp. anciens messages</string>
+    <string name="pref_hold_message_num_sum">Nombre de SMS à garder</string>
+    <string name="pref_hold_message_num_title">Anciens messages</string>
 
 </resources>

@@ -4,6 +4,13 @@ LheidoSMS (BETA)
 Appli sms libre avec une interface moderne et sobre.
 **Encore en plein développement!!**
 
+##Last Update
+ * correction de bug pour les options de conversations (avec bidouille...)
+ * supp conversation, ok sur sgs2 mais la conversation reste sur 2.3 (émulateur)
+ * vider conversation, ok
+ * supp anciens message, ok
+ * ouvrir conversation, heureusement... ok x)
+
 ##ToDo List
  * MMS (en cours et bug)
  * Nouvelle conversation (en cour)

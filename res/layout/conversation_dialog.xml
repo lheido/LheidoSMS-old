@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:background="#000000" >
+    <TextView
+        android:id="@+id/supp_conversation_dialog"
+        android:padding="15dp"
+        android:text="@string/conversation_dialog_1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#242424"
+        android:layout_marginBottom="2dp"
+        android:textColor="#FFFFFF"
+        android:textSize="17sp" />
+
+    <TextView
+        android:id="@+id/clear_conversation_dialog"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:padding="15dp"
+        android:text="@string/conversation_dialog_2"
+        android:background="#242424"
+        android:layout_marginBottom="2dp"
+        android:textColor="#FFFFFF"
+        android:textSize="17sp" />
+    <TextView
+        android:id="@+id/clear_hold_conversation_dialog"
+        android:padding="15dp"
+        android:text="@string/conversation_dialog_3"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#242424"
+        android:layout_marginBottom="2dp"
+        android:textColor="#FFFFFF"
+        android:textSize="17sp" />
+    <TextView
+        android:id="@+id/open_conversation_dialog"
+        android:padding="15dp"
+        android:text="@string/conversation_dialog_4"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#242424"
+        android:textColor="#FFFFFF"
+        android:textSize="17sp" />
+</LinearLayout>
