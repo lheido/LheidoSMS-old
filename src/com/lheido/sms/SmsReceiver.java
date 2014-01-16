@@ -86,7 +86,7 @@ public class SmsReceiver extends BroadcastReceiver {
 						ContentValues values = new ContentValues();
 				        values.put("status", 0);
 						try{
-				        	context.getContentResolver().update(Uri.parse("content://sms"), values, "_id = "+_id, null);
+				        	context.getContentResolver().update(Uri.parse("content://sms/"+_id), values, null, null);
 				        }catch (Exception ex){
 				        	Toast.makeText(context, ex.toString(), Toast.LENGTH_LONG).show();
 				        }

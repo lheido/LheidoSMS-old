@@ -95,22 +95,22 @@ public class SMSFrag extends LheidoSMSFragBase {
 					SmsManager manager = SmsManager.getDefault();
 					ArrayList<String> bodyPart = manager.divideMessage(body);
 					if(bodyPart.size() > 1){
-						ArrayList<PendingIntent> piSent = new ArrayList<PendingIntent>();
+						//ArrayList<PendingIntent> piSent = new ArrayList<PendingIntent>();
 						ArrayList<PendingIntent> piDelivered = new ArrayList<PendingIntent>();
 						for(int i = 0; i < bodyPart.size(); i++){
 							Intent ideli = new Intent(ACTION_DELIVERED_SMS);
 							ideli.putExtra(ARG_SMS_DELIVERED, new_id);
-							piSent.add(PendingIntent.getBroadcast(context, 0, new Intent(ACTION_SENT_SMS) , 0));
-							piDelivered.add(PendingIntent.getBroadcast(context, 0, ideli , 0));
+							//piSent.add(PendingIntent.getBroadcast(context, 0, new Intent(ACTION_SENT_SMS) , 0));
+							piDelivered.add(PendingIntent.getBroadcast(context, 0, ideli , PendingIntent.FLAG_UPDATE_CURRENT));
 						}
-						manager.sendMultipartTextMessage(phoneContact, null, bodyPart , piSent, piDelivered);
+						manager.sendMultipartTextMessage(phoneContact, null, bodyPart , null, piDelivered);
 					}
 					else {
 						Intent ideli = new Intent(ACTION_DELIVERED_SMS);
 						ideli.putExtra(ARG_SMS_DELIVERED, new_id);
-		                PendingIntent piSent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_SENT_SMS) , 0);
-		                PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, ideli, 0);
-						manager.sendTextMessage(phoneContact, null, body, piSent, piDelivered);
+		                //PendingIntent piSent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_SENT_SMS) , 0);
+		                PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, ideli, PendingIntent.FLAG_UPDATE_CURRENT);
+						manager.sendTextMessage(phoneContact, null, body, null, piDelivered);
 					}
 					//supp. les messages de bidouille
 					String selection = "thread_id = ? AND body = ?";
@@ -168,7 +168,7 @@ public class SMSFrag extends LheidoSMSFragBase {
 								ContentValues values = new ContentValues();
 						        values.put("status", 0);
 						        try{
-						        	context.getContentResolver().update(Uri.parse("content://sms"), values, "_id = "+_id, null);
+						        	context.getContentResolver().update(Uri.parse("content://sms/"+_id), values, null, null);
 						        	int k = 0;
 						        	boolean find = false;
 						        	while(!find && k < Message_list.size()){
