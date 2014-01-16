@@ -40,7 +40,7 @@ public class LheidoSMSFragBase extends SherlockFragment {
 		// Empty constructor required for fragment subclasses
 	}
 	
-	public void add_sms(long _id, String body, String type, int read,Time t, int position, ArrayList<Message> liste){
+	public void add_sms(long _id, String body, String type, int deli,Time t, int position, ArrayList<Message> liste){
     	Message sms = new Message();
     	if(_id != -1)
     		sms.setId(_id);
@@ -48,7 +48,7 @@ public class LheidoSMSFragBase extends SherlockFragment {
 		sms.setDate(t);
 		if(type.equals("2")){
 			sms.setRight(true);
-			if(read == 1)
+			if(deli == 0)
 				sms.setRead(true);
 			else sms.setRead(false);
 		}
@@ -59,7 +59,7 @@ public class LheidoSMSFragBase extends SherlockFragment {
 		}
     }
 	
-	public void add_mms(long _id, String body, Bitmap pict, String type, int read, Time t, int position, ArrayList<Message> liste){
+	public void add_mms(long _id, String body, Bitmap pict, String type, int deli, Time t, int position, ArrayList<Message> liste){
 		Message sms = new Message();
     	if(_id != -1)
     		sms.setId(_id);
@@ -68,7 +68,7 @@ public class LheidoSMSFragBase extends SherlockFragment {
 		sms.setDate(t);
 		if(type.equals("2")){
 			sms.setRight(true);
-			if(read == 1)
+			if(deli == 1)
 				sms.setRead(true);
 			else sms.setRead(false);
 		}
@@ -96,7 +96,7 @@ public class LheidoSMSFragBase extends SherlockFragment {
 					long _id = query.getLong(query.getColumnIndexOrThrow("_id"));
 					string = query.getString(query.getColumnIndexOrThrow("body")).toString();
 					String type = query.getString(query.getColumnIndexOrThrow("type")).toString();
-					int read = query.getInt(query.getColumnIndexOrThrow("read"));
+					int read = query.getInt(query.getColumnIndexOrThrow("status"));
 					long date = query.getLong(query.getColumnIndexOrThrow("date"));
 					Time t = new Time();
 					t.set(date);

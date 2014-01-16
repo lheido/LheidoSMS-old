@@ -1,5 +1,7 @@
 package com.lheido.sms;
 
+import java.util.ArrayList;
+
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -97,14 +99,15 @@ public class LheidoUtils {
 		public void onClick(View v) {
 			switch (v.getId()) {
 		    case R.id.supp_conversation_dialog:
-		    	mContext.getContentResolver().delete(Uri.parse("content://sms"), "thread_id = " + thread_id, null);
+		    	/*mContext.getContentResolver().delete(Uri.parse("content://sms"), "thread_id = " + thread_id, null);
 		    	this.act.lheidoConversationListe.remove(pos);
 		    	this.act.lConversationsAdapter.notifyDataSetChanged();
-		    	Toast.makeText(mContext, "La conversation a était supprimée", Toast.LENGTH_LONG).show();
+		    	Toast.makeText(mContext, "La conversation a était supprimée", Toast.LENGTH_LONG).show();*/
+		    	Toast.makeText(mContext, "Action disable", Toast.LENGTH_LONG).show();
 		    	break;
 		    case R.id.clear_conversation_dialog:
 		    	try{
-		    		Message new_sms = new Message();
+		    		/*Message new_sms = new Message();
 					new_sms.setBody("LHEIDO_SMS_CONVERSATION_CLEAR");
 					new_sms.setRight(true);
 					new_sms.setRead(false);
@@ -115,7 +118,8 @@ public class LheidoUtils {
 					String[] selectArgs = {""+thread_id, "LHEIDO_SMS_CONVERSATION_CLEAR"};
 					mContext.getContentResolver().delete(Uri.parse("content://sms"), selection, selectArgs);
 					MainActivity.store_sms(new_sms, thread_id);
-					this.act.updateContact(pos, ""+0);
+					this.act.updateContact(pos, ""+0);*/
+		    		delete_sms(1, 1);
 		    		Toast.makeText(mContext, "La conversation a était vidée", Toast.LENGTH_LONG).show();
 		    	}catch(Exception ex){
 		    		Toast.makeText(mContext, ex.toString(), Toast.LENGTH_LONG).show();
@@ -125,30 +129,7 @@ public class LheidoUtils {
 		    case R.id.clear_hold_conversation_dialog:
 		    	if(userPref.hold_message){
 		    		if(userPref.hold_message_num < nb_sms){
-		    			Uri uri = Uri.parse("content://sms");
-		    			String[] projection = {"*"};
-		    			String selection = "thread_id = ?";
-		    			String[] selectionArgs = {""+thread_id};
-		    			Cursor cr = mContext.getContentResolver().query(uri, projection, selection, selectionArgs, "date DESC");
-		    			if(cr != null){
-		    				long count = 0;
-		    				long _id = -1;
-		    				while(count < userPref.hold_message_num && cr.moveToNext()){
-		    					count ++;
-		    					_id = cr.getLong(cr.getColumnIndexOrThrow("_id"));
-		    				}
-		    				cr.close();
-		    				if(_id != -1)
-		    					mContext.getContentResolver().delete(uri, "thread_id = "+thread_id+" AND _id < " + _id, null);
-		    				Message new_sms = new Message();
-							new_sms.setBody("LHEIDO_SMS_CONVERSATION_CLEAR");
-							new_sms.setRight(true);
-							new_sms.setRead(false);
-							Time now = new Time();
-							new_sms.setDate(now);
-		    				MainActivity.store_sms(new_sms, thread_id);
-		    				this.act.updateContact(pos, ""+userPref.hold_message_num);
-		    			}
+		    			delete_sms(userPref.hold_message_num, userPref.hold_message_num);
 		    			Toast.makeText(mContext, "Anciens messages supprimés", Toast.LENGTH_LONG).show();
 		    		}
 		    	} else{
@@ -162,6 +143,28 @@ public class LheidoUtils {
 		    	break;
 		    }
 			dismiss();
+		}
+		
+		public void delete_sms(long count, long update){
+			Uri uri = Uri.parse("content://sms");
+			String[] projection = {"*"};
+			String selection = "thread_id = ?";
+			String[] selectionArgs = {""+thread_id};
+			Cursor cr = mContext.getContentResolver().query(uri, projection, selection, selectionArgs, "date DESC");
+			if(cr != null){
+				ArrayList<Long> list_id_delete = new ArrayList<Long>();
+				long c = 0;
+				while(cr.moveToNext()){
+					if(c >= count)
+						list_id_delete.add(cr.getLong(cr.getColumnIndexOrThrow("_id")));
+					c ++;
+				}
+				cr.close();
+				for(Long id : list_id_delete){
+					mContext.getContentResolver().delete(Uri.parse("content://sms/"+id), selection, selectionArgs);
+				}
+			}
+			this.act.updateContact(pos, ""+update);
 		}
 		
 	}

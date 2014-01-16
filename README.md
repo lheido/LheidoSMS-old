@@ -5,11 +5,12 @@ Appli sms libre avec une interface moderne et sobre.
 **Encore en plein développement!!**
 
 ##Last Update
- * correction de bug pour les options de conversations (avec bidouille...)
- * supp conversation, ok sur sgs2 mais la conversation reste sur 2.3 (émulateur)
- * vider conversation, ok
- * supp anciens message, ok
- * ouvrir conversation, heureusement... ok x)
+ * correction de bug pour les options de conversations
+ * correction accusé de réception
+ * supp conversation, pas fait
+ * vider conversation, ok (uniquement les sms (garde le dernier sms), pas les mms)
+ * supp anciens message, ok (idem précédent)
+ * ouvrir conversation, heureusement... ok xP
 
 ##ToDo List
  * MMS (en cours et bug)

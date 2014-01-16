@@ -89,7 +89,7 @@ public class MainActivity extends SherlockFragmentActivity {
     	contact.setConversationId(query.getString(query.getColumnIndex("_id")).toString());
     	// bidouille en rapport avec le vidage de conversation.
     	long nb_sms = Long.parseLong(query.getString(query.getColumnIndex("message_count")));
-    	try{
+    	/*try{
     		Uri uri_h = Uri.parse("content://sms");
     		String[] projection = {"*"};
     		String selection = "thread_id = ? AND body = ?";
@@ -104,7 +104,8 @@ public class MainActivity extends SherlockFragmentActivity {
     		contact.setNb_sms(""+nb_sms);
     	}catch(Exception ex){
     		contact.setNb_sms(""+nb_sms);
-    	}
+    	}*/
+    	contact.setNb_sms(""+nb_sms);
         String recipientId = query.getString(query.getColumnIndex("recipient_ids")).toString();
         String[] recipientIds = recipientId.split(" ");
         for(int k=0; k < recipientIds.length; k++){
@@ -743,11 +744,13 @@ public class MainActivity extends SherlockFragmentActivity {
 	        ContentValues values = new ContentValues();
 	        values.put("address", sms.getPhone());
 	        values.put("body", sms.getBody());
-	        values.put("read", 0);
+	        values.put("read", false);
+	        values.put("type", sms.isRight() ? 2 : 1);
+	        values.put("status", 32);
 	        if(thread_id != -1)
 	        	values.put("thread_id", thread_id);
 	        values.put("date", sms.getDateNormalize());
-	        Uri uri_id = context.getContentResolver().insert(Uri.parse("content://sms/sent"), values);
+	        Uri uri_id = context.getContentResolver().insert(Uri.parse("content://sms"), values);
 	        long new_id = Long.parseLong(uri_id.toString().substring(14));
 	        //Log.v("LHEIDO SMS LOG", "new_id = "+new_id);
 	        return new_id;

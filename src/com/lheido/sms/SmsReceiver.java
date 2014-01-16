@@ -84,7 +84,7 @@ public class SmsReceiver extends BroadcastReceiver {
 					long _id = intent.getExtras().getLong(ARG_SMS_DELIVERED, -1);
 					if(_id != -1){
 						ContentValues values = new ContentValues();
-				        values.put("read", true);
+				        values.put("status", 0);
 						try{
 				        	context.getContentResolver().update(Uri.parse("content://sms"), values, "_id = "+_id, null);
 				        }catch (Exception ex){

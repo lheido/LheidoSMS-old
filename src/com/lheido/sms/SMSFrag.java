@@ -87,7 +87,7 @@ public class SMSFrag extends LheidoSMSFragBase {
 					now.setToNow();
 					new_sms.setDate(now);
 					long new_id = MainActivity.store_sms(new_sms, conversationId);
-					add_sms(new_id, body, "2", 0, now, 0, Message_list);
+					add_sms(new_id, body, "2", 32, now, 0, Message_list);
 					conversationAdapter.notifyDataSetChanged();
 					conversation_nb_sms += 1;
 					act.updateContact(list_conversationId, ""+conversation_nb_sms);
@@ -100,8 +100,8 @@ public class SMSFrag extends LheidoSMSFragBase {
 						for(int i = 0; i < bodyPart.size(); i++){
 							Intent ideli = new Intent(ACTION_DELIVERED_SMS);
 							ideli.putExtra(ARG_SMS_DELIVERED, new_id);
-							piSent.add(PendingIntent.getBroadcast(context, 0, new Intent(ACTION_SENT_SMS) , PendingIntent.FLAG_UPDATE_CURRENT));
-							piDelivered.add(PendingIntent.getBroadcast(context, 0, ideli , PendingIntent.FLAG_UPDATE_CURRENT));
+							piSent.add(PendingIntent.getBroadcast(context, 0, new Intent(ACTION_SENT_SMS) , 0));
+							piDelivered.add(PendingIntent.getBroadcast(context, 0, ideli , 0));
 						}
 						manager.sendMultipartTextMessage(phoneContact, null, bodyPart , piSent, piDelivered);
 					}
@@ -109,7 +109,7 @@ public class SMSFrag extends LheidoSMSFragBase {
 						Intent ideli = new Intent(ACTION_DELIVERED_SMS);
 						ideli.putExtra(ARG_SMS_DELIVERED, new_id);
 		                PendingIntent piSent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_SENT_SMS) , 0);
-		                PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, ideli, PendingIntent.FLAG_UPDATE_CURRENT);
+		                PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, ideli, 0);
 						manager.sendTextMessage(phoneContact, null, body, piSent, piDelivered);
 					}
 					//supp. les messages de bidouille
@@ -166,7 +166,7 @@ public class SMSFrag extends LheidoSMSFragBase {
 							long _id = intent.getExtras().getLong(ARG_SMS_DELIVERED, -1);
 							if(_id != -1){
 								ContentValues values = new ContentValues();
-						        values.put("read", true);
+						        values.put("status", 0);
 						        try{
 						        	context.getContentResolver().update(Uri.parse("content://sms"), values, "_id = "+_id, null);
 						        	int k = 0;
