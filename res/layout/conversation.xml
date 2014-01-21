@@ -21,8 +21,9 @@
 	        android:cacheColorHint="@android:color/transparent"
 	        android:background="@android:color/transparent"
 	        android:stackFromBottom="true"
-	        android:transcriptMode="alwaysScroll" />
-    </RelativeLayout>
+	        android:smoothScrollbar="true"
+	        />	
+	</RelativeLayout>
     <RelativeLayout
         android:id="@+id/send_message_layout"
         android:layout_width="match_parent"

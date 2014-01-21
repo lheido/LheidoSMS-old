@@ -87,25 +87,7 @@ public class MainActivity extends SherlockFragmentActivity {
     public LheidoContact getLConversationInfo(Cursor query){
     	LheidoContact contact = new LheidoContact();
     	contact.setConversationId(query.getString(query.getColumnIndex("_id")).toString());
-    	// bidouille en rapport avec le vidage de conversation.
-    	long nb_sms = Long.parseLong(query.getString(query.getColumnIndex("message_count")));
-    	/*try{
-    		Uri uri_h = Uri.parse("content://sms");
-    		String[] projection = {"*"};
-    		String selection = "thread_id = ? AND body = ?";
-    		String[] selectionArgs = {contact.getConversationId(), "LHEIDO_SMS_CONVERSATION_CLEAR"};
-    		Cursor hack = context.getContentResolver().query(uri_h, projection, selection, selectionArgs, null);
-    		long hack_nb_sms = 0;
-    		if(hack != null){
-    			while(hack.moveToNext()) hack_nb_sms ++;
-    			hack.close();
-    		}
-    		nb_sms -= hack_nb_sms;
-    		contact.setNb_sms(""+nb_sms);
-    	}catch(Exception ex){
-    		contact.setNb_sms(""+nb_sms);
-    	}*/
-    	contact.setNb_sms(""+nb_sms);
+    	contact.setNb_sms(query.getString(query.getColumnIndex("message_count")).toString());
         String recipientId = query.getString(query.getColumnIndex("recipient_ids")).toString();
         String[] recipientIds = recipientId.split(" ");
         for(int k=0; k < recipientIds.length; k++){
@@ -672,7 +654,6 @@ public class MainActivity extends SherlockFragmentActivity {
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        	position_mem = position;
             selectItem(position);
         }
     }
@@ -681,9 +662,9 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		@Override
 		public boolean onItemLongClick(AdapterView<?> arg0, View view, int position, long id) {
-			long thread_id = Long.parseLong(lheidoConversationListe.get(position).getConversationId());
-			long sms_count = Long.parseLong(lheidoConversationListe.get(position).getNb_sms());
-			LheidoDialog dialog = new LheidoDialog(MainActivity.this, CONVERSATION_DIALOG, position, thread_id, sms_count);
+			//long thread_id = Long.parseLong(lheidoConversationListe.get(position).getConversationId());
+			//long sms_count = lheidoConversationListe.get(position).getNb_sms();
+			LheidoDialog dialog = new LheidoDialog(MainActivity.this, CONVERSATION_DIALOG, position, lheidoConversationListe.get(position));
 			dialog.show();
 			return false;
 		}
@@ -691,6 +672,7 @@ public class MainActivity extends SherlockFragmentActivity {
     }
     
     public void selectItem(int position) {
+    	position_mem = position;
     	SMSFrag SMSFragConversation = new SMSFrag();
     	SMSFragConversation.setAct(MainActivity.this);
     	//SherlockFragment MMSFragConversation = new MMSFrag();
@@ -699,7 +681,7 @@ public class MainActivity extends SherlockFragmentActivity {
         args.putString(SMSFrag.ARG_CONTACT_NAME, lheidoConversationListe.get(position).getName());
         args.putString(SMSFrag.ARG_CONTACT_PHONE, lheidoConversationListe.get(position).getPhone());
         args.putInt(SMSFrag.ARG_CONVERSATION_ID, Integer.parseInt(lheidoConversationListe.get(position).getConversationId()));
-        args.putInt(SMSFrag.ARG_CONVERSATION_COUNT, Integer.parseInt(lheidoConversationListe.get(position).getNb_sms()));
+        args.putLong(SMSFrag.ARG_CONVERSATION_COUNT, lheidoConversationListe.get(position).getNb_sms());
         SMSFragConversation.setArguments(args);
         //MMSFragConversation.setArguments(args);
         pages.clear();
@@ -737,6 +719,11 @@ public class MainActivity extends SherlockFragmentActivity {
         super.onConfigurationChanged(newConfig);
         // Pass any configuration change to the drawer toggls
         mDrawerToggle.onConfigurationChanged(newConfig);
+        if(newConfig.orientation==Configuration.ORIENTATION_LANDSCAPE){
+        	//Toast.makeText(context, "landscape", Toast.LENGTH_LONG).show();
+        }else{
+        	//Toast.makeText(context, "portrait", Toast.LENGTH_LONG).show();
+        }
     }
     
     public static long store_sms(Message sms, long thread_id){

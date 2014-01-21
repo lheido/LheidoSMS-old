@@ -14,6 +14,7 @@ import android.preference.PreferenceManager;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockFragment;
@@ -31,10 +32,12 @@ public class LheidoSMSFragBase extends SherlockFragment {
 	public String name;
 	public String phoneContact;
 	public int conversationId;
-	public int conversation_nb_sms;
+	public long conversation_nb_sms;
 	public ListView liste;
 	public int list_conversationId;
 	public BroadcastReceiver mBroadCast;
+	public InputMethodManager inputManager;
+	public final int sdk = android.os.Build.VERSION.SDK_INT;
 	
 	public LheidoSMSFragBase(){
 		// Empty constructor required for fragment subclasses
@@ -100,7 +103,7 @@ public class LheidoSMSFragBase extends SherlockFragment {
 					long date = query.getLong(query.getColumnIndexOrThrow("date"));
 					Time t = new Time();
 					t.set(date);
-					Log.v("LHEIDO SMS LOG", "_id = "+_id+",\n body = "+string+",\n read = "+read);
+					//Log.v("LHEIDO SMS LOG", "_id = "+_id+",\n body = "+string+",\n read = "+read);
 					add_sms(_id, string, type, read, t, 1, liste);
 					count += 1;
 				}
@@ -190,7 +193,7 @@ public class LheidoSMSFragBase extends SherlockFragment {
         name = getArguments().getString(ARG_CONTACT_NAME);
         phoneContact = getArguments().getString(ARG_CONTACT_PHONE);
         conversationId = getArguments().getInt(ARG_CONVERSATION_ID);
-        conversation_nb_sms = getArguments().getInt(ARG_CONVERSATION_COUNT);
+        conversation_nb_sms = getArguments().getLong(ARG_CONVERSATION_COUNT);
         liste = (ListView) rootView.findViewById(id_liste);
         list_conversationId = getArguments().getInt(ARG_CONVERSATION_NUMBER);
 	}

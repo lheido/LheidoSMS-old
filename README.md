@@ -5,14 +5,15 @@ Appli sms libre avec une interface moderne et sobre.
 **Encore en plein développement!!**
 
 ##Last Update
- * correction de bug pour les options de conversations
- * correction accusé de réception
- * supp conversation, pas fait
- * vider conversation, ok (uniquement les sms (garde le dernier sms), pas les mms)
- * supp anciens message, ok (idem précédent)
- * ouvrir conversation, heureusement... ok xP
+ * bug fixe changement d'orientation (pour 4.1.2 en tous cas)
 
 ##ToDo List
+ * Options relatives aux messages
+ ** transférer
+ ** copier le texte
+ ** Afficher les détails
+ ** supprimer
+ * liste de choix de conversation au démarrage de l'app (en paramètre, non activer par défaut)
  * MMS (en cours et bug)
  * Nouvelle conversation (en cour)
  * Image Contact dans la liste des conversations

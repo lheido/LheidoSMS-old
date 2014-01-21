@@ -60,7 +60,7 @@ public class ListeConversationsAdapter extends BaseAdapter {
 			holder = (ListeConversationViewHolder) convertView.getTag();
 	 
 		holder.mName.setText(contact.getName());
-		holder.mCount.setText(contact.getNb_sms());
+		holder.mCount.setText(""+contact.getNb_sms());
 	 
 		//RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) holder.mLayout.getLayoutParams();
 		//Check whether message is mine to show green background and align to right

@@ -63,10 +63,16 @@
     <color name="bg_conversationList" >#FF2A2A2A</color>
     <color name="bg_conversationList_focus" >#FF6A6A6A</color>
     
-    <string name="conversation_dialog_1">Supp. la conversation</string>
-    <string name="conversation_dialog_2">Vider la conversation</string>
+    <string name="conversation_dialog_0">Options relatives aux conversations</string>
+    <string name="conversation_dialog_1">Supprimer</string>
+    <string name="conversation_dialog_2">Vider</string>
     <string name="conversation_dialog_3">Supp. anciens messages</string>
-    <string name="conversation_dialog_4">Ouvrir la conversation</string>
+    <string name="conversation_dialog_4">Ouvrir</string>
+    <string name="message_dialog_0">Options relatives aux messages</string>
+    <string name="message_dialog_1">Supprimer</string>
+    <string name="message_dialog_2">Transférer</string>
+    <string name="message_dialog_3">Afficher les détails</string>
+    <string name="message_dialog_4">Copier</string>
     <string name="pref_hold_message_off">Désactivée</string>
     <string name="pref_hold_message_on">Activée</string>
     <string name="pref_hold_message_title">Supp. anciens messages</string>

@@ -2,17 +2,22 @@ package com.lheido.sms;
 
 import java.util.ArrayList;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Dialog;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Build.VERSION_CODES;
 import android.preference.PreferenceManager;
-import android.text.format.Time;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,22 +63,35 @@ public class LheidoUtils {
 	
 	public static class LheidoDialog extends Dialog implements android.view.View.OnClickListener {
 		private static final int CONVERSATION_DIALOG = 1;
-		//private static final int MESSAGE_DIALOG = 2;
+		private static final int MESSAGE_DIALOG = 2;
 		private int id_dialog;
 		private Context mContext;
 		private MainActivity act;
 		private int pos;
-		private long thread_id;
-		private long nb_sms;
 		private UserPref userPref;
-		public LheidoDialog(MainActivity activity, int type_dialog, int position, long th_id, long sms_count) {
+		private LheidoContact lcontact;
+		private Message sms;
+		private SMSFrag parent;
+		private long thread_id;
+		public LheidoDialog(MainActivity activity, int type_dialog, int position, LheidoContact contact) {
 			super(activity);
 			this.act = activity;
 			mContext = activity.getApplicationContext();
 			id_dialog = type_dialog;
 			pos = position;
+			lcontact = contact;
+			userPref = new UserPref();
+	    	userPref.setUserPref(PreferenceManager.getDefaultSharedPreferences(mContext));
+		}
+		public LheidoDialog(MainActivity activity, int type_dialog, int position, long th_id, Message message, SMSFrag s) {
+			super(activity);
+			this.act = activity;
+			mContext = activity.getApplicationContext();
+			id_dialog = type_dialog;
+			pos = position;
+			sms = message;
+			parent = s;
 			thread_id = th_id;
-			nb_sms = sms_count;
 			userPref = new UserPref();
 	    	userPref.setUserPref(PreferenceManager.getDefaultSharedPreferences(mContext));
 		}
@@ -82,7 +100,8 @@ public class LheidoUtils {
 		protected void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			requestWindowFeature(Window.FEATURE_NO_TITLE);
-			if(id_dialog == CONVERSATION_DIALOG){
+			switch(id_dialog){
+			case CONVERSATION_DIALOG:
 				setContentView(R.layout.conversation_dialog);
 				TextView supp_conv = (TextView) findViewById(R.id.supp_conversation_dialog);
 				TextView clear_conv = (TextView) findViewById(R.id.clear_conversation_dialog);
@@ -92,33 +111,33 @@ public class LheidoUtils {
 				clear_conv.setOnClickListener(this);
 				clear_hold.setOnClickListener(this);
 				open_conv.setOnClickListener(this);
+				break;
+			case MESSAGE_DIALOG:
+				setContentView(R.layout.message_dialog);
+				TextView supp_sms = (TextView) findViewById(R.id.supp_message_dialog);
+				TextView transf_sms = (TextView) findViewById(R.id.transfert_message_dialog);
+				TextView copy_sms = (TextView) findViewById(R.id.copy_message_dialog);
+				TextView detail_sms = (TextView) findViewById(R.id.detail_message_dialog);
+				supp_sms.setOnClickListener(this);
+				transf_sms.setOnClickListener(this);
+				copy_sms.setOnClickListener(this);
+				detail_sms.setOnClickListener(this);
+				break;
+			default: break;
 			}
 		}
 		
+		@SuppressLint("NewApi")
+		@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 		@Override
 		public void onClick(View v) {
 			switch (v.getId()) {
 		    case R.id.supp_conversation_dialog:
-		    	/*mContext.getContentResolver().delete(Uri.parse("content://sms"), "thread_id = " + thread_id, null);
-		    	this.act.lheidoConversationListe.remove(pos);
-		    	this.act.lConversationsAdapter.notifyDataSetChanged();
-		    	Toast.makeText(mContext, "La conversation a était supprimée", Toast.LENGTH_LONG).show();*/
+		    	//Toast.makeText(mContext, "La conversation a était supprimée", Toast.LENGTH_LONG).show();
 		    	Toast.makeText(mContext, "Action disable", Toast.LENGTH_LONG).show();
 		    	break;
 		    case R.id.clear_conversation_dialog:
 		    	try{
-		    		/*Message new_sms = new Message();
-					new_sms.setBody("LHEIDO_SMS_CONVERSATION_CLEAR");
-					new_sms.setRight(true);
-					new_sms.setRead(false);
-					Time now = new Time();
-					new_sms.setDate(now);
-					MainActivity.store_sms(new_sms, thread_id);
-					String selection = "thread_id = ? AND body != ?";
-					String[] selectArgs = {""+thread_id, "LHEIDO_SMS_CONVERSATION_CLEAR"};
-					mContext.getContentResolver().delete(Uri.parse("content://sms"), selection, selectArgs);
-					MainActivity.store_sms(new_sms, thread_id);
-					this.act.updateContact(pos, ""+0);*/
 		    		delete_sms(1, 1);
 		    		Toast.makeText(mContext, "La conversation a était vidée", Toast.LENGTH_LONG).show();
 		    	}catch(Exception ex){
@@ -128,7 +147,7 @@ public class LheidoUtils {
 		    	break;
 		    case R.id.clear_hold_conversation_dialog:
 		    	if(userPref.hold_message){
-		    		if(userPref.hold_message_num < nb_sms){
+		    		if(userPref.hold_message_num < lcontact.getNb_sms()){
 		    			delete_sms(userPref.hold_message_num, userPref.hold_message_num);
 		    			Toast.makeText(mContext, "Anciens messages supprimés", Toast.LENGTH_LONG).show();
 		    		}
@@ -139,6 +158,23 @@ public class LheidoUtils {
 		    case R.id.open_conversation_dialog:
 		    	this.act.selectItem(pos);
 		    	break;
+		    case R.id.supp_message_dialog:
+		    	mContext.getContentResolver().delete(Uri.parse("content://sms/"+sms.getId()), "thread_id = "+thread_id, null);
+		    	this.parent.remove_sms(pos);
+		    	break;
+		    case R.id.transfert_message_dialog: break;
+		    case R.id.copy_message_dialog:
+		    	int sdk = android.os.Build.VERSION.SDK_INT;
+		    	if(sdk < VERSION_CODES.HONEYCOMB){
+		    		android.text.ClipboardManager clipboard = (android.text.ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+		    		clipboard.setText(sms.getBody());
+		    	} else{
+		    		android.content.ClipboardManager clipboard = (android.content.ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+		    		ClipData clip = ClipData.newPlainText("simple text", sms.getBody());
+		    		clipboard.setPrimaryClip(clip);
+		    	}
+		    	break;
+		    case R.id.detail_message_dialog: break;
 		    default:
 		    	break;
 		    }
@@ -149,7 +185,7 @@ public class LheidoUtils {
 			Uri uri = Uri.parse("content://sms");
 			String[] projection = {"*"};
 			String selection = "thread_id = ?";
-			String[] selectionArgs = {""+thread_id};
+			String[] selectionArgs = {""+lcontact.getConversationId()};
 			Cursor cr = mContext.getContentResolver().query(uri, projection, selection, selectionArgs, "date DESC");
 			if(cr != null){
 				ArrayList<Long> list_id_delete = new ArrayList<Long>();
