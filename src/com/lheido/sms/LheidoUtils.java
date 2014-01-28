@@ -1,27 +1,238 @@
 package com.lheido.sms;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.content.ClipData;
+import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Build.VERSION_CODES;
 import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
+import android.provider.ContactsContract.PhoneLookup;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class LheidoUtils {
+	private static final int DELETE_CLEAR = 0;
+	private static final int DELETE_HOLD = 1;
+	
+	public static class DeleteTask extends AsyncTask<Void, Void, Boolean>{
+		private WeakReference<MainActivity> act = null;
+		private Context context = null;
+		private UserPref userPref = null;
+		private long count, update;
+		private int pos;
+		private LheidoContact lcontact;
+		private int type_delete;
+		
+		public DeleteTask(MainActivity activity, long cnt, long up, int position, LheidoContact contact, int type){
+			link(activity);
+			count = cnt;
+			update = up;
+			pos = position;
+			lcontact = contact;
+			type_delete = type;
+		}
+
+		private void link(MainActivity activity) {
+			act = new WeakReference<MainActivity>(activity);
+		}
+		
+		@Override
+	    protected void onPreExecute () {
+			if(act.get() != null){
+				context = act.get().getApplicationContext();
+				userPref = new UserPref();
+				userPref.setUserPref(PreferenceManager.getDefaultSharedPreferences(context));
+			}
+	    }
+
+		@Override
+		protected Boolean doInBackground(Void... params) {
+			try{
+				delete_sms();
+				return true;
+			}catch(Exception ex){
+				Toast.makeText(context, ex.toString(), Toast.LENGTH_LONG).show();
+				return false;
+			}
+		}
+		
+		@Override
+	    protected void onPostExecute (Boolean result) {
+			if (act.get() != null) {
+				if(!result)
+					Toast.makeText(context, "Problème asyncTask", Toast.LENGTH_LONG).show();
+				else{
+					switch(type_delete){
+					case DELETE_CLEAR: 
+						Toast.makeText(context, "La conversation a était vidée", Toast.LENGTH_LONG).show();
+						break;
+					case DELETE_HOLD: 
+						Toast.makeText(context, "Anciens messages supprimés", Toast.LENGTH_LONG).show();
+						break;
+					}
+				}
+			}
+	    }
+		
+		public void delete_sms(){
+			Uri uri = Uri.parse("content://sms");
+			String[] projection = {"*"};
+			String selection = "thread_id = ?";
+			String[] selectionArgs = {""+lcontact.getConversationId()};
+			Cursor cr = this.act.get().getContentResolver().query(uri, projection, selection, selectionArgs, "date DESC");
+			if(cr != null){
+				ArrayList<Long> list_id_delete = new ArrayList<Long>();
+				long c = 0;
+				while(cr.moveToNext()){
+					if(c >= count)
+						list_id_delete.add(cr.getLong(cr.getColumnIndexOrThrow("_id")));
+					c ++;
+				}
+				cr.close();
+				for(Long id : list_id_delete){
+					this.act.get().getContentResolver().delete(Uri.parse("content://sms/"+id), selection, selectionArgs);
+				}
+			}
+			/*try{
+				this.act.get().updateContact(pos, ""+update);
+			}
+			catch(Exception ex){
+				Toast.makeText(context, "function updateContact\n"+ex.toString(), Toast.LENGTH_LONG).show();
+			}*/
+		}
+		
+	}
+	
+	public static class ConversationListTask extends AsyncTask<Void, LheidoContact, Boolean>{
+		
+		private WeakReference<MainActivity> act = null;
+		private Context context = null;
+		private UserPref userPref = null;
+		
+		public ConversationListTask(MainActivity activity){
+			link(activity);
+		}
+		
+		public void retrieveContact(LheidoContact contact, String phone){
+			Uri uri = Uri.withAppendedPath(PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phone));
+			String[] projection = {PhoneLookup.DISPLAY_NAME, PhoneLookup._ID};
+			Cursor cur = this.act.get().getContentResolver().query(uri, projection, null, null, null);
+			if(cur != null){
+				if(cur.moveToFirst()){
+					try{
+						contact.setId(cur.getLong(cur.getColumnIndexOrThrow(PhoneLookup._ID)));
+					}catch(Exception ex){
+						Toast.makeText(context, "Error setId\n"+ex.toString(), Toast.LENGTH_LONG).show();
+					}
+					try{
+						contact.setName(cur.getString(cur.getColumnIndexOrThrow(PhoneLookup.DISPLAY_NAME)));
+					}catch(Exception ex){
+						Toast.makeText(context, "Error setName\n"+ex.toString(), Toast.LENGTH_LONG).show();
+					}
+					try{
+						contact.setPic(context);
+					}catch(Exception ex){
+						Toast.makeText(context, "Error setPic\n"+ex.toString(), Toast.LENGTH_LONG).show();
+					}
+				}else
+					contact.setName(phone);
+				cur.close();
+			}
+		}
+		
+		public LheidoContact getLConversationInfo(Cursor query){
+	    	LheidoContact contact = new LheidoContact();
+	    	contact.setConversationId(query.getString(query.getColumnIndex("_id")).toString());
+	    	contact.setNb_sms(query.getString(query.getColumnIndex("message_count")).toString());
+	        String recipientId = query.getString(query.getColumnIndex("recipient_ids")).toString();
+	        String[] recipientIds = recipientId.split(" ");
+	        for(int k=0; k < recipientIds.length; k++){
+	        	Uri ur = Uri.parse("content://mms-sms/canonical-addresses" );
+	        	if(recipientIds[k] != ""){
+	        		Cursor cr = this.act.get().getContentResolver().query(ur, new String[]{"*"}, "_id = " + recipientIds[k], null, null);
+	        		if(cr != null){
+	        			while(cr.moveToNext()){
+	        				//String id = cr.getString(0).toString();
+	        				String address = cr.getString(1).toString();
+	        				contact.setPhone(address);
+	        				retrieveContact(contact, address);
+	        				//contact.setName(context, address);
+	        				//contact.setPic(context);
+	        			}
+	        			cr.close();
+	        		}
+	        	}
+	        }
+	    	return contact;
+	    }
+		
+		@Override
+	    protected void onPreExecute () {
+			if(act.get() != null){
+				context = act.get().getApplicationContext();
+				userPref = new UserPref();
+				userPref.setUserPref(PreferenceManager.getDefaultSharedPreferences(context));
+			}
+	    }
+
+	    @Override
+	    protected void onPostExecute (Boolean result) {
+	      if (act.get() != null) {
+	    	  if(!result)
+	    		  Toast.makeText(context, "Problème génération liste conversations", Toast.LENGTH_LONG).show();
+	      }
+	    }
+		
+		@Override
+		protected Boolean doInBackground(Void... params) {
+			if(act.get() != null){
+				final String[] projection = new String[] {"_id", "date", "message_count", "recipient_ids", "read", "type"};
+				Uri uri = Uri.parse("content://mms-sms/conversations?simple=true");
+				Cursor query = context.getContentResolver().query(uri, projection, null, null, "date DESC");
+				if (query.moveToFirst()) {
+					int i = 0;
+					do {
+						publishProgress(getLConversationInfo(query));
+						i = i + 1;
+					} while (i < userPref.max_conversation && query.moveToNext());
+				} else {
+					//mConversationListe.add("Pas de conversations !");
+				}
+				if (query != null) {
+					query.close();
+				}
+				return true;
+			}
+			return false;
+		}
+		
+		@Override
+	    protected void onProgressUpdate (LheidoContact... prog) {
+	      if (act.get() != null)
+	    	  act.get().updateProgress(prog[0]);
+	    }
+
+	    public void link (MainActivity pActivity) {
+	    	act = new WeakReference<MainActivity>(pActivity);
+	    }
+	}
+	
 	public static class UserPref{
     	public int max_conversation = 10;
     	public int max_sms = 21;
@@ -103,13 +314,15 @@ public class LheidoUtils {
 			switch(id_dialog){
 			case CONVERSATION_DIALOG:
 				setContentView(R.layout.conversation_dialog);
-				TextView supp_conv = (TextView) findViewById(R.id.supp_conversation_dialog);
+				//TextView supp_conv = (TextView) findViewById(R.id.supp_conversation_dialog);
 				TextView clear_conv = (TextView) findViewById(R.id.clear_conversation_dialog);
-				TextView clear_hold = (TextView) findViewById(R.id.clear_hold_conversation_dialog);
+				TextView voir_contact = (TextView) findViewById(R.id.contact_conversation_dialog);
 				TextView open_conv = (TextView) findViewById(R.id.open_conversation_dialog);
-				supp_conv.setOnClickListener(this);
+				TextView hold_conv = (TextView) findViewById(R.id.hold_conversation_dialog);
+				hold_conv.setOnClickListener(this);
+				//supp_conv.setOnClickListener(this);
 				clear_conv.setOnClickListener(this);
-				clear_hold.setOnClickListener(this);
+				voir_contact.setOnClickListener(this);
 				open_conv.setOnClickListener(this);
 				break;
 			case MESSAGE_DIALOG:
@@ -132,28 +345,35 @@ public class LheidoUtils {
 		@Override
 		public void onClick(View v) {
 			switch (v.getId()) {
-		    case R.id.supp_conversation_dialog:
+		    /*case R.id.supp_conversation_dialog:
 		    	//Toast.makeText(mContext, "La conversation a était supprimée", Toast.LENGTH_LONG).show();
 		    	Toast.makeText(mContext, "Action disable", Toast.LENGTH_LONG).show();
-		    	break;
+		    	break;*/
 		    case R.id.clear_conversation_dialog:
 		    	try{
-		    		delete_sms(1, 1);
-		    		Toast.makeText(mContext, "La conversation a était vidée", Toast.LENGTH_LONG).show();
+		    		DeleteTask delete = new DeleteTask(act, 1, 1, pos, lcontact, DELETE_CLEAR);
+		    		delete.execute();
+		    		this.act.updateContact(pos, "1");
 		    	}catch(Exception ex){
 		    		Toast.makeText(mContext, ex.toString(), Toast.LENGTH_LONG).show();
 		    		Log.v("LHEIDO SMS LOG", ex.toString());
 		    	}
 		    	break;
-		    case R.id.clear_hold_conversation_dialog:
+		    case R.id.contact_conversation_dialog:
+		    	Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, lcontact.getId());
+		    	Intent look = new Intent(Intent.ACTION_VIEW, contactUri);
+		    	look.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		    	mContext.startActivity(look);
+		    	break;
+		    case R.id.hold_conversation_dialog:
 		    	if(userPref.hold_message){
 		    		if(userPref.hold_message_num < lcontact.getNb_sms()){
-		    			delete_sms(userPref.hold_message_num, userPref.hold_message_num);
-		    			Toast.makeText(mContext, "Anciens messages supprimés", Toast.LENGTH_LONG).show();
+		    			DeleteTask delete = new DeleteTask(act, userPref.hold_message_num, userPref.hold_message_num, pos, lcontact, DELETE_HOLD);
+			    		delete.execute();
+			    		this.act.updateContact(pos, ""+userPref.hold_message_num);
 		    		}
-		    	} else{
+		    	} else
 		    		Toast.makeText(mContext, "La suppression des anciens messages est désactivée", Toast.LENGTH_LONG).show();
-		    	}
 		    	break;
 		    case R.id.open_conversation_dialog:
 		    	this.act.selectItem(pos);
@@ -180,29 +400,5 @@ public class LheidoUtils {
 		    }
 			dismiss();
 		}
-		
-		public void delete_sms(long count, long update){
-			Uri uri = Uri.parse("content://sms");
-			String[] projection = {"*"};
-			String selection = "thread_id = ?";
-			String[] selectionArgs = {""+lcontact.getConversationId()};
-			Cursor cr = mContext.getContentResolver().query(uri, projection, selection, selectionArgs, "date DESC");
-			if(cr != null){
-				ArrayList<Long> list_id_delete = new ArrayList<Long>();
-				long c = 0;
-				while(cr.moveToNext()){
-					if(c >= count)
-						list_id_delete.add(cr.getLong(cr.getColumnIndexOrThrow("_id")));
-					c ++;
-				}
-				cr.close();
-				for(Long id : list_id_delete){
-					mContext.getContentResolver().delete(Uri.parse("content://sms/"+id), selection, selectionArgs);
-				}
-			}
-			this.act.updateContact(pos, ""+update);
-		}
-		
 	}
-	
 }

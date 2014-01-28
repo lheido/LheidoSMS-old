@@ -5,12 +5,11 @@ import java.util.ArrayList;
 //import com.actionbarsherlock.app.ActionBar.LayoutParams;
 
 import android.content.Context;
-//import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-//import android.widget.RelativeLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class ListeConversationsAdapter extends BaseAdapter {
@@ -53,6 +52,7 @@ public class ListeConversationsAdapter extends BaseAdapter {
 			convertView = LayoutInflater.from(mContext).inflate(R.layout.conversations_list, parent, false);
 			holder.mName = (TextView) convertView.findViewById(R.id.list_conversation_contact_name);
 			holder.mCount = (TextView) convertView.findViewById(R.id.list_conversation_count);
+			holder.mContactPicture = (ImageView) convertView.findViewById(R.id.contactPict);
 			//holder.mLayout = (RelativeLayout) convertView.findViewById(R.id.message_relativeLayout);
 			convertView.setTag(holder);
 		}
@@ -61,35 +61,26 @@ public class ListeConversationsAdapter extends BaseAdapter {
 	 
 		holder.mName.setText(contact.getName());
 		holder.mCount.setText(""+contact.getNb_sms());
-	 
-		//RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) holder.mLayout.getLayoutParams();
-		//Check whether message is mine to show green background and align to right
-		/*if(contact.isRight())
-		{
-			
-			//holder.mLayout.setGravity(Gravity.RIGHT);
-			//holder.mLayout.setPadding(42, 0, 0, 0);
-			holder.mBody.setBackgroundColor(0xFF202020);
+		if(contact.getPic() != null){
+			holder.mContactPicture.setImageBitmap(contact.getPic());
+			//holder.mName.setBackgroundResource(R.drawable.bg_conversation_name);
+			holder.mName.setBackgroundResource(android.R.color.transparent);
+		} else{
+			holder.mContactPicture.setImageResource(R.drawable.default_contact_photo);
+			holder.mName.setBackgroundResource(android.R.color.transparent);
 		}
-		//If not mine then it is from sender to show orange background and align to left
-		else
-		{
-			//holder.mLayout.setGravity(Gravity.LEFT);
-			//holder.mLayout.setPadding(0, 0, 42, 0);
-			holder.mBody.setBackgroundColor(0xFF2A2A2A);
-		}*/
+		
 		return convertView;
 	}
 	@Override
 	public int getCount() {
-		// TODO Auto-generated method stub
 		return mListConv.size();
 	}
 	static class ListeConversationViewHolder {
 		//public RelativeLayout mLayout;
 		public TextView mName;
 		public TextView mCount;
-		//public ImageView mContactPicture;
+		public ImageView mContactPicture;
 	}
 }
 

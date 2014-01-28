@@ -66,8 +66,9 @@
     <string name="conversation_dialog_0">Options relatives aux conversations</string>
     <string name="conversation_dialog_1">Supprimer</string>
     <string name="conversation_dialog_2">Vider</string>
-    <string name="conversation_dialog_3">Supp. anciens messages</string>
+    <string name="conversation_dialog_3">Voir contact</string>
     <string name="conversation_dialog_4">Ouvrir</string>
+    <string name="conversation_dialog_5">Supprimer anciens messages</string>
     <string name="message_dialog_0">Options relatives aux messages</string>
     <string name="message_dialog_1">Supprimer</string>
     <string name="message_dialog_2">Transférer</string>

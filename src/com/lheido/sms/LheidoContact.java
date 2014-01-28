@@ -1,9 +1,20 @@
 package com.lheido.sms;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import android.annotation.SuppressLint;
+import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Build.VERSION_CODES;
 import android.provider.ContactsContract;
+import android.provider.ContactsContract.Contacts;
 import android.telephony.PhoneNumberUtils;
+import android.widget.Toast;
 
 public class LheidoContact {
 	private String name_ = null;
@@ -11,6 +22,8 @@ public class LheidoContact {
 	private long nb_sms_ = -1;
 	private String phone_ = null;
 	private String conversation_id_ = null;
+	private Bitmap pic;
+	private long id;
 	public LheidoContact(){
 		// Empty constructor
 	}
@@ -31,6 +44,9 @@ public class LheidoContact {
 				if(name.equals("") && PhoneNumberUtils.compare(phone, address)){
 					name = cur.getString(cur.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)).toString();
 					res += name;
+					//long id = cur.getLong(cur.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
+					//this.setId(id);
+					//this.setPic(context);
 				}
 			}
 			if(name.equals(""))
@@ -66,5 +82,57 @@ public class LheidoContact {
 	}
 	public void setConversationId(String id){
 		this.conversation_id_ = id;
+	}
+	
+	public void setPic(Context context){
+		InputStream input = openPhoto(context);
+		if(input != null)
+			this.pic = BitmapFactory.decodeStream(input);
+		else 
+			this.pic = null;
+	}
+	
+	public Bitmap getPic(){
+		return this.pic;
+	}
+	
+	@SuppressLint("NewApi")
+	public InputStream openPhoto(Context context){
+		InputStream input = null;
+		Uri uri = ContentUris.withAppendedId(Contacts.CONTENT_URI, this.id);
+		//input = Contacts.openContactPhotoInputStream(context.getContentResolver(), uri);
+		int sdk = android.os.Build.VERSION.SDK_INT;
+    	if(sdk < VERSION_CODES.HONEYCOMB)
+    		input = Contacts.openContactPhotoInputStream(context.getContentResolver(), uri);
+    	else{
+    		try{
+    			input = Contacts.openContactPhotoInputStream(context.getContentResolver(), uri, true);
+    		}catch(Exception ex){
+    			Toast.makeText(context, "Error input hd photo\n"+ex.toString(), Toast.LENGTH_LONG).show();
+    		}
+    	}
+    	return input;
+	}
+	
+	/*public InputStream openDisplayPhoto(Context context, long contactId) {
+	     Uri contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, contactId);
+	     Uri displayPhotoUri = Uri.withAppendedPath(contactUri, Contacts.Photo.DISPLAY_PHOTO);
+	     try {
+	         AssetFileDescriptor fd =
+	             context.getContentResolver().openAssetFileDescriptor(displayPhotoUri, "r");
+	         return fd.createInputStream();
+	     } catch (IOException e) {
+	         return null;
+	     }
+	 }*/
+	
+	public long getId() {
+		return this.id;
+	}
+	public void setId(long id_){
+		this.id = id_;
+	}
+	public void setName(String string) {
+		this.name_ = string;
 	}
 }

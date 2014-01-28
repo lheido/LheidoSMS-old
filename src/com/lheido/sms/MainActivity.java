@@ -83,46 +83,12 @@ public class MainActivity extends SherlockFragmentActivity {
     public UserPref userPref;
     public ArrayList<SherlockFragment> pages;
     public ArrayList<LheidoContact> lheidoConversationListe = new ArrayList<LheidoContact>();
-
-    public LheidoContact getLConversationInfo(Cursor query){
-    	LheidoContact contact = new LheidoContact();
-    	contact.setConversationId(query.getString(query.getColumnIndex("_id")).toString());
-    	contact.setNb_sms(query.getString(query.getColumnIndex("message_count")).toString());
-        String recipientId = query.getString(query.getColumnIndex("recipient_ids")).toString();
-        String[] recipientIds = recipientId.split(" ");
-        for(int k=0; k < recipientIds.length; k++){
-        	Uri ur = Uri.parse("content://mms-sms/canonical-addresses" );
-        	if(recipientIds[k] != ""){
-        		Cursor cr = context.getContentResolver().query(ur, new String[]{"*"}, "_id = " + recipientIds[k], null, null);
-        		if(cr != null){
-        			while(cr.moveToNext()){
-        				//String id = cr.getString(0).toString();
-        				String address = cr.getString(1).toString();
-        				contact.setPhone(address);
-        				contact.setName(context, address);
-        			}
-        			cr.close();
-        		}
-        	}
-        }
-    	return contact;
-    }
     
-    public void genListContact(){
-    	final String[] projection = new String[] {"_id", "date", "message_count", "recipient_ids", "read", "type"};
-    	Uri uri = Uri.parse("content://mms-sms/conversations?simple=true");
-    	Cursor query = context.getContentResolver().query(uri, projection, null, null, "date DESC");
-    	if (query.moveToFirst()) {
-    		int i = 0;
-    		do {
-    			lheidoConversationListe.add(getLConversationInfo(query));
-    			i = i + 1;
-    		} while (i < userPref.max_conversation && query.moveToNext());
-    	} else {
-    		//mConversationListe.add("Pas de conversations !");
-    	}
-    	if (query != null) {
-    		query.close();
+    public void updateProgress(LheidoContact c){
+    	lheidoConversationListe.add(c);
+    	lConversationsAdapter.notifyDataSetChanged();
+    	if(lheidoConversationListe.size() == 1){
+    		selectItem(0);
     	}
     }
     
@@ -133,7 +99,6 @@ public class MainActivity extends SherlockFragmentActivity {
     
     public void updateContactList(){
     	lheidoConversationListe.clear();
-    	genListContact();
     	lConversationsAdapter.notifyDataSetChanged();
     }
     
@@ -162,9 +127,9 @@ public class MainActivity extends SherlockFragmentActivity {
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // set up the drawer's list view with items and click listener
         lheidoConversationListe.clear();
-        if(lheidoConversationListe.isEmpty()){
+        /*if(lheidoConversationListe.isEmpty()){
         	genListContact();
-        }/* else { //sinon maj des infos
+        }*//* else { //sinon maj des infos
         	for(int i=0; i<lheidoConversationListe.size();i++){
         		Cursor c = context.getContentResolver().query(Uri.parse("content://mms-sms/conversations?simple=true"), new String[]{"*"}, "_id = "+lheidoConversationListe.get(i).getConversationId(), null, null);
         		if(c.moveToFirst()){
@@ -177,7 +142,9 @@ public class MainActivity extends SherlockFragmentActivity {
         	}
         }*/
         lConversationsAdapter = new ListeConversationsAdapter(this, R.layout.conversations_list, lheidoConversationListe);
-        mDrawerList.setAdapter(lConversationsAdapter);
+		mDrawerList.setAdapter(lConversationsAdapter);
+        LheidoUtils.ConversationListTask gen_list = new LheidoUtils.ConversationListTask(this);
+        gen_list.execute();
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
         mDrawerList.setOnItemLongClickListener(new DrawerItemLongClickListener());
 
@@ -337,12 +304,12 @@ public class MainActivity extends SherlockFragmentActivity {
     protected void onResume(){
     	super.onResume();
     	userPref.setUserPref(PreferenceManager.getDefaultSharedPreferences(this));
-    	updateContactList();
+    	/*updateContactList();
     	try{
     		selectItem(position_mem);
     	}catch(Exception ex){
     		selectItem(0);
-    	}
+    	}*/
     	if(userPref.first_upper)
     		new_sms_body.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
     	new_sms_body.setSingleLine(false);
@@ -366,6 +333,8 @@ public class MainActivity extends SherlockFragmentActivity {
         // If the nav drawer is open, hide action items related to the content view
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mNewConversationLayout);
         menu.findItem(R.id.action_new_sms).setVisible(!drawerOpen);
+        boolean drawerListOpen = mDrawerLayout.isDrawerOpen(mDrawerRelative);
+        menu.findItem(R.id.action_call).setVisible(!(drawerOpen || drawerListOpen));
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -399,6 +368,11 @@ public class MainActivity extends SherlockFragmentActivity {
         		mDrawerLayout.closeDrawer(mNewConversationLayout);
         	}*/
         	mDrawerLayout.openDrawer(mDrawerRelative);
+        	return true;
+        case R.id.action_call:
+        	Intent call = new Intent(Intent.ACTION_CALL);
+        	call.setData(Uri.parse("tel:"+lheidoConversationListe.get(position_mem).getPhone()));
+        	startActivity(call);
         	return true;
         default:
             return super.onOptionsItemSelected(item);

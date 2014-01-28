@@ -35,7 +35,7 @@
         android:textColor="#FFFFFF"
         android:textSize="17sp" />
     <TextView
-        android:id="@+id/clear_hold_conversation_dialog"
+        android:id="@+id/contact_conversation_dialog"
         android:padding="15dp"
         android:text="@string/conversation_dialog_3"
         android:layout_width="fill_parent"
@@ -45,6 +45,16 @@
         android:textColor="#FFFFFF"
         android:textSize="17sp" />
     <TextView
+        android:id="@+id/hold_conversation_dialog"
+        android:padding="15dp"
+        android:text="@string/conversation_dialog_5"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#242424"
+        android:layout_marginBottom="2dp"
+        android:textColor="#FFFFFF"
+        android:textSize="17sp" />
+    <!-- <TextView
         android:id="@+id/supp_conversation_dialog"
         android:padding="15dp"
         android:text="@string/conversation_dialog_1"
@@ -53,6 +63,6 @@
         android:background="#242424"
         android:layout_marginBottom="2dp"
         android:textColor="#FFFFFF"
-        android:textSize="17sp" />
+        android:textSize="17sp" />  -->
     
 </LinearLayout>
