@@ -6,20 +6,20 @@ Appli sms libre avec une interface moderne et sobre.
 
 ##State functionalities
  * Options relatives aux conversations:
- ** Done:
- *** Ouvrir
- *** Voir Contact
- *** Vider
- *** Supprimer anciens messages
- ** ToDo:
- *** Supprimer
+     * Done:
+         * Ouvrir
+         * Voir Contact
+         * Vider
+         * Supprimer anciens messages
+     * ToDo:
+         * Supprimer
  * Options relatives aux messages:
- ** Done:
- *** Copier
- ** ToDo:
- *** Transférer
- *** Afficher les détails
- *** Supprimer
+     * Done:
+         * Copier
+     * ToDo:
+         * Transférer
+         * Afficher les détails
+         * Supprimer
  * appeler contact conversation courante (fait)
  * système de favoris avec liste au démarrage (pas fait)
  * recherche dans une conversation (pas fait)
@@ -34,10 +34,10 @@ Appli sms libre avec une interface moderne et sobre.
 
 ##ToDo List
  * Options relatives aux messages
- ** transférer
- ** copier le texte (Ok)
- ** Afficher les détails
- ** supprimer (bug)
+     * transférer
+     * copier le texte (Ok)
+     * Afficher les détails
+     * supprimer (bug)
  * liste de choix de conversation au démarrage de l'app (en paramètre, non activer par défaut)
  * MMS (en cours et bug)
  * Nouvelle conversation (en cours)
